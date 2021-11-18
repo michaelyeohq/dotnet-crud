@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Store.Models;
 
-namespace Store.Data
+namespace Store.Data.Products
 {
     public interface IProductRepo
     {

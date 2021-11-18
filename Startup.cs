@@ -4,9 +4,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using Store.Data.Products;
 using Store.Data;
 using Microsoft.EntityFrameworkCore;
 using System;
+using Store.Data.Users;
+using Store.Helpers;
 
 namespace Store
 {
@@ -30,7 +33,11 @@ namespace Store
             services.AddCors();
             services.AddControllers();
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+            // configure strongly typed settings objects
+            // services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
             services.AddScoped<IProductRepo, ProductRepo>();
+            services.AddScoped<IUserRepo, UserRepo>();
+            services.AddScoped<IJwtUtils, JwtUtils>();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Store", Version = "v1" });
@@ -55,7 +62,14 @@ namespace Store
                 .AllowAnyHeader()
                 .SetIsOriginAllowed(origin => true) // allow any origin
                 .AllowCredentials()); // allow credentials
+
+            app.UseMiddleware<ErrorHandlerMiddleware>();
+
+            // app.UseMiddleware<JwtMiddleware>();
+
             app.UseHttpsRedirection();
+
+
 
             app.UseAuthorization();
 

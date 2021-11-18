@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Store.Models;
 
-namespace Store.Data
+namespace Store.Data.Products
 {
     public class ProductRepo : IProductRepo
     {

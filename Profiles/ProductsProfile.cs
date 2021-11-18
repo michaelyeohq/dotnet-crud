@@ -1,5 +1,5 @@
 using AutoMapper;
-using Store.Dtos;
+using Store.Dtos.Products;
 using Store.Models;
 
 namespace Store.Profiles

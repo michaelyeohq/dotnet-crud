@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Store.Data;
-using Store.Dtos;
+using Store.Data.Products;
+using Store.Dtos.Products;
+using Store.Helpers;
 using Store.Models;
 
 namespace Store.Controllers
@@ -14,8 +15,10 @@ namespace Store.Controllers
     {
         private readonly IProductRepo _repository;
         private readonly IMapper _mapper;
-        public ProductController(IProductRepo repository, IMapper mapper)
+        private readonly IJwtUtils _jwtUtils;
+        public ProductController(IProductRepo repository, IMapper mapper, IJwtUtils jwtUtils)
         {
+            _jwtUtils = jwtUtils;
             _mapper = mapper;
             _repository = repository;
 
@@ -25,69 +28,116 @@ namespace Store.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<Product>> GetAllProducts()
         {
-            var products = _repository.GetAllProducts();
+            try
+            {
+                var jwt = Request.Cookies["jwt"];
+                var token = _jwtUtils.ValidateToken(jwt);
+                var products = _repository.GetAllProducts();
 
-            return Ok(_mapper.Map<IEnumerable<ProductReadDto>>(products));
+                return Ok(_mapper.Map<IEnumerable<ProductReadDto>>(products));
+            }
+            catch (Exception)
+            {
+                throw new AppException("Unauthorized");
+            }
         }
 
         //GET api/products/{id}
-        [HttpGet("{id}", Name="GetProductById")]
+        [HttpGet("{id}", Name = "GetProductById")]
         public ActionResult<Product> GetProductById(int id)
         {
-            var product = _repository.GetProductById(id);
-            if (product != null)
+            try
             {
-                return Ok(_mapper.Map<ProductReadDto>(product));
+                var jwt = Request.Cookies["jwt"];
+                var token = _jwtUtils.ValidateToken(jwt);
+                var product = _repository.GetProductById(id);
+                if (product != null)
+                {
+                    return Ok(_mapper.Map<ProductReadDto>(product));
+                }
+                return NotFound();
             }
-            return NotFound();
+            catch (Exception)
+            {
+
+                throw new AppException("Unauthorized");
+            }
+
         }
 
         //POST api/products
         [HttpPost]
         public ActionResult<ProductReadDto> CreateProduct(ProductCreateDto prdt)
         {
-            var product = _mapper.Map<Product>(prdt);
-            _repository.CreateProduct(product);
-            _repository.SaveChanges();
+            try
+            {
+                var jwt = Request.Cookies["jwt"];
+                var token = _jwtUtils.ValidateToken(jwt);
+                var product = _mapper.Map<Product>(prdt);
+                _repository.CreateProduct(product);
+                _repository.SaveChanges();
 
-            var productReadDto = _mapper.Map<ProductReadDto>(product);
-            
-            return CreatedAtRoute(nameof(GetProductById), new { Id = productReadDto.Id }, productReadDto);
+                var productReadDto = _mapper.Map<ProductReadDto>(product);
+
+                return CreatedAtRoute(nameof(GetProductById), new { Id = productReadDto.Id }, productReadDto);
+            }
+            catch (Exception)
+            {
+                throw new AppException("Unauthorized");
+            }
         }
 
         // PUT api/products/{id}
         [HttpPut("{id}")]
         public ActionResult UpdateProduct(int id, ProductUpdateDto prdt)
         {
-            var product = _repository.GetProductById(id);
-            if(product == null)
+            try
             {
-                return NotFound();
+                var jwt = Request.Cookies["jwt"];
+                var token = _jwtUtils.ValidateToken(jwt);
+                var product = _repository.GetProductById(id);
+                if (product == null)
+                {
+                    return NotFound();
+                }
+
+                _mapper.Map(prdt, product);
+
+                _repository.UpdateProduct(product);
+
+                _repository.SaveChanges();
+
+                return NoContent();
             }
-
-            _mapper.Map(prdt, product);
-
-            _repository.UpdateProduct(product);
-
-            _repository.SaveChanges();
-
-            return NoContent();
+            catch (Exception)
+            {
+                throw new AppException("Unauthorized");
+            }
         }
 
         // DELETE api/products/{id}
         [HttpDelete("{id}")]
         public ActionResult DeleteCommand(int id)
         {
-            var product = _repository.GetProductById(id);
-            if (product == null)
+            try
             {
-                return NotFound();
+                var jwt = Request.Cookies["jwt"];
+                var token = _jwtUtils.ValidateToken(jwt);
+                var product = _repository.GetProductById(id);
+                if (product == null)
+                {
+                    return NotFound();
+                }
+                _repository.DeleteProduct(product);
+
+                _repository.SaveChanges();
+
+                return NoContent();
             }
-            _repository.DeleteProduct(product);
-
-            _repository.SaveChanges();
-
-            return NoContent();
+            catch (Exception)
+            {
+                throw new AppException("Unauthorized");
+            }
         }
     }
 }
