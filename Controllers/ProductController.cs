@@ -26,7 +26,7 @@ namespace Store.Controllers
 
         //GET api/products
         [HttpGet]
-        public ActionResult<IEnumerable<Product>> GetAllProducts()
+        public ActionResult<IEnumerable<ProductReadDto>> GetAllProducts()
         {
             try
             {
@@ -44,7 +44,7 @@ namespace Store.Controllers
 
         //GET api/products/{id}
         [HttpGet("{id}", Name = "GetProductById")]
-        public ActionResult<Product> GetProductById(int id)
+        public ActionResult<ProductReadDto> GetProductById(int id)
         {
             try
             {
