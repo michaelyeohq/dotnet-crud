@@ -36,21 +36,24 @@ namespace Store.Controllers
             var user = _repository.AuthenticateUser(userName, password);
 
             var token = _jwtUtils.GenerateToken(user);
-
+            var userResponse = _mapper.Map<UserReadDto>(user);
+            // Response.Headers.Add("Access-Control-Allow-Credentials", "true");
             Response.Cookies.Append("jwt", token, new CookieOptions
             {
-                HttpOnly = true
+                HttpOnly = false,
+                MaxAge = new TimeSpan(2, 14, 18)
             });
 
             return Ok(new
             {
-                message = "login"
+                message = "Login Successful",
+                user = userResponse
             });
         }
 
         //GET api/users
         [HttpGet]
-        public ActionResult<IEnumerable<User>> GetAllUsers()
+        public ActionResult<IEnumerable<UserReadDto>> GetAllUsers()
         {
             try
             {
@@ -58,7 +61,8 @@ namespace Store.Controllers
                 var token = _jwtUtils.ValidateToken(jwt);
                 var users = _repository.GetAllUsers();
 
-                return Ok(users);
+
+                return Ok(_mapper.Map<IEnumerable<UserReadDto>>(users));
             }
             catch (Exception)
             {
@@ -68,15 +72,16 @@ namespace Store.Controllers
 
         //POST api/users
         [HttpPost]
-        public ActionResult<User> CreateUser(UserCreateDto userCreateDto)
+        public ActionResult<UserReadDto> CreateUser(UserCreateDto userCreateDto)
         {
             var user = _mapper.Map<User>(userCreateDto);
             // hash password
             user.PasswordHash = BCryptNet.HashPassword(userCreateDto.Password);
             _repository.CreateUser(user);
             _repository.SaveChanges();
+            var userResponse = _mapper.Map<UserReadDto>(user);
 
-            return NoContent();
+            return Ok(new { message = "User '" + user.UserName + "' Created", user = userResponse });
         }
     }
 }
