@@ -10,7 +10,8 @@ namespace Store.Profiles
         {
             CreateMap<UserCreateDto, User>();
             CreateMap<UserAuthenticateDto, User>();
-            CreateMap<User, UserResponseDto>();
+            CreateMap<User, UserReadDto>();
+            CreateMap<UserCreateDto, UserReadDto>();
         }
         
     }
