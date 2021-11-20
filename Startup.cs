@@ -67,7 +67,7 @@ namespace Store
 
             // app.UseMiddleware<JwtMiddleware>();
 
-            app.UseHttpsRedirection();
+            // app.UseHttpsRedirection();
 
 
 
